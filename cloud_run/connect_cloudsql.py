@@ -8,6 +8,7 @@ def connect_sql():
   for x in myresult:
     print(x)
   cnx.close()
-  print(myresult)
   return myresult
+
+
 
