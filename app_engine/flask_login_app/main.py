@@ -11,6 +11,8 @@ from flask import (
 from werkzeug.utils import secure_filename
 from gcloud import storage
 import pandas
+import firebase_admin
+from firebase_admin import credentials, firestore
 
 
 class User:
@@ -24,9 +26,30 @@ class User:
 
 
 users = []
-users.append(User(id=1, username='pratik', password='pratik95'))
-users.append(User(id=2, username='shival', password='alpha123'))
-users.append(User(id=3, username='riya', password='riya01'))
+
+
+def get_firestore_data():
+    if not firebase_admin._apps:
+        cred = credentials.Certificate("service_account.json")
+        default_app = firebase_admin.initialize_app(cred)
+    db = firestore.client()  # this connects to our Firestore database
+    collection = db.collection('users')  # opens 'places' collection
+    doc = collection.document('list1')  # specifies the 'rome' document
+    res = doc.get().to_dict()
+    id1 = 0
+    for key, val in res.items():
+        usernam = key
+        passwrd = val
+        id1 = id1 + 1
+        users.append(User(id=id1, username=usernam, password=passwrd))
+
+get_firestore_data()
+
+# users.append(User(id=1, username='pratik', password='pratik95'))
+# users.append(User(id=2, username='shival', password='alpha123'))
+# users.append(User(id=3, username='riya', password='riya01'))
+# print("users")
+# print(users)
 
 app = Flask(__name__)
 app.secret_key = 'somesecretkeythatonlyishouldknow'
@@ -38,6 +61,8 @@ def before_request():
 
     if 'user_id' in session:
         user = [x for x in users if x.id == session['user_id']][0]
+        print("user")
+        print(user)
         g.user = user
 
 
@@ -50,6 +75,8 @@ def login():
         password = request.form['password']
 
         user = [x for x in users if x.username == username][0]
+        # print(user.id)
+        # print(user.password)
         if user and user.password == password:
             session['user_id'] = user.id
             return redirect(url_for('profile'))
@@ -65,11 +92,11 @@ def profile():
         return redirect(url_for('login'))
     if request.method == 'POST':
         file = request.files['inputFile']
-        df = pandas.read_csv(request.files.get('inputFile'))
         if secure_filename(file.filename) != '':
+            df = pandas.read_csv(request.files.get('inputFile'))
             # filename = secure_filename(file.filename)
             # file.save(secure_filename(file.filename))
-            print(type(secure_filename(file.filename)))
+            # print(type(secure_filename(file.filename)))
             client = storage.Client()
             bucket = client.get_bucket('ad_data_raw')
             bucket.blob("webpage/" + secure_filename(file.filename)).upload_from_string(df.to_csv(), 'text/csv')
@@ -78,8 +105,6 @@ def profile():
             return render_template('thank_you.html')
         else:
             return render_template('profile.html')
-
-
 
     return render_template('profile.html')
 
