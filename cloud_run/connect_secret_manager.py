@@ -1,7 +1,7 @@
-
 # Import the Secret Manager client library.
 from google.cloud import secretmanager
 import google_crc32c
+
 
 def access_secret_version(project_id, secret_id, version_id):
     """
@@ -18,5 +18,8 @@ def access_secret_version(project_id, secret_id, version_id):
     response = client.access_secret_version(request={"name": name})
 
     payload = response.payload.data.decode("UTF-8")
-    print("{}".format(payload))
+    # print("{}".format(payload))
+    return payload
 
+
+access_secret_version("stone-lodge-353709", "cloud-sql-password", 1)
