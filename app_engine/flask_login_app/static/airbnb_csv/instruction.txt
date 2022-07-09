@@ -1,0 +1,11 @@
+GCP preparation
+1. Activate dtaflow API
+2. Create directories for datafloe stg and temp logs
+3. Create BigQuery dataset
+4. Move code to console
+
+Running Code
+1. install requirement lib
+    pip3 install -r requirements.txt
+2. run script
+    python3 app.py
